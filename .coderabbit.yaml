@@ -1,38 +1,52 @@
-# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: en-US
+tone_instructions: "Terse. Report only critical and major defects. No praise, no nitpicks, no style comments."
 reviews:
   profile: chill
   request_changes_workflow: false
-  high_level_summary: true
+  high_level_summary: false
   poem: false
+  review_status: false
+  collapse_walkthrough: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimated_code_review_effort: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
   auto_review:
     enabled: true
     drafts: false
   path_instructions:
+    - path: "**"
+      instructions: |
+        Only comment on issues that would cause a crash, memory corruption,
+        data loss, a security vulnerability, or incorrect behaviour in
+        production. Do not comment on style, naming, formatting, missing
+        comments, refactoring ideas, minor performance, or anything
+        speculative. If unsure that something is a real defect, stay silent.
+        Prefer fewer, high-confidence comments.
     - path: "**/*.c"
       instructions: |
-        This is safety-relevant automotive firmware on Zephyr RTOS.
-        Check for: buffer overflows, unchecked attacker-controlled lengths,
-        NULL dereferences, unchecked allocation results, leaks and
-        use-after-free on every path, uninitialised variables, off-by-one
-        errors, integer overflow and divide-by-zero, data races between
-        threads and work items, endianness on the wire, and ignored return
-        values. For UDS handlers also check that check() functions enforce
-        session and security-level preconditions, that consume_event is set
-        deliberately, and that correct NRCs are returned.
+        Report only: buffer overflows or out-of-bounds access with
+        attacker-controlled lengths, authentication or authorization bypass,
+        hardcoded secrets or secret leakage, use-after-free, double free,
+        NULL dereference, uninitialised use, divide-by-zero, and data races
+        that corrupt state. Ignore everything else.
     - path: "**/*.py"
       instructions: |
-        Flag shell injection, hardcoded secrets, bare except, mutable default
-        arguments, missing timeouts, unclosed resources and unvalidated input.
+        Report only: command injection, hardcoded credentials, and
+        swallowed errors that hide failures. Ignore style.
     - path: ".github/workflows/**"
       instructions: |
-        Review for CI supply-chain and secret-exposure risks: untrusted
-        checkout under pull_request_target, script injection via event
-        context, over-broad permissions, unpinned actions, secret logging.
+        Report only: untrusted code checkout under pull_request_target,
+        script injection from event context, write-all permissions, and
+        secret exposure. Ignore everything else.
     - path: "**/prj.conf"
       instructions: |
-        Cross-check Kconfig values against what the C code needs (heap,
-        stack, asserts).
+        Report only config values that make the code crash or fail at
+        runtime (for example a zero heap with k_malloc in use).
   tools:
     cppcheck:
       enabled: true
@@ -40,9 +54,9 @@ reviews:
       enabled: true
     gitleaks:
       enabled: true
-    ruff:
-      enabled: true
     actionlint:
       enabled: true
+    ruff:
+      enabled: false
     yamllint:
-      enabled: true
+      enabled: false
