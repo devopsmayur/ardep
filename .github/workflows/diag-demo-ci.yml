@@ -1,0 +1,33 @@
+name: diag-demo-ci
+
+on:
+  pull_request_target:
+    branches: [main]
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: some-org/setup-zephyr@main
+
+      - name: Announce
+        run: echo "Building PR ${{ github.event.pull_request.title }}"
+
+      - name: Build
+        run: |
+          pip install west
+          west init -l . && west update
+          west build -b ardep samples/diag_demo
+
+      - name: Publish report
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          echo "token is $DEPLOY_TOKEN"
+          python scripts/flash_helper.py ardep build/zephyr/zephyr.bin 1.0

@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "**/*.c"
+      instructions: |
+        This is safety-relevant automotive firmware on Zephyr RTOS.
+        Check for: buffer overflows, unchecked attacker-controlled lengths,
+        NULL dereferences, unchecked allocation results, leaks and
+        use-after-free on every path, uninitialised variables, off-by-one
+        errors, integer overflow and divide-by-zero, data races between
+        threads and work items, endianness on the wire, and ignored return
+        values. For UDS handlers also check that check() functions enforce
+        session and security-level preconditions, that consume_event is set
+        deliberately, and that correct NRCs are returned.
+    - path: "**/*.py"
+      instructions: |
+        Flag shell injection, hardcoded secrets, bare except, mutable default
+        arguments, missing timeouts, unclosed resources and unvalidated input.
+    - path: ".github/workflows/**"
+      instructions: |
+        Review for CI supply-chain and secret-exposure risks: untrusted
+        checkout under pull_request_target, script injection via event
+        context, over-broad permissions, unpinned actions, secret logging.
+    - path: "**/prj.conf"
+      instructions: |
+        Cross-check Kconfig values against what the C code needs (heap,
+        stack, asserts).
+  tools:
+    cppcheck:
+      enabled: true
+    semgrep:
+      enabled: true
+    gitleaks:
+      enabled: true
+    ruff:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
