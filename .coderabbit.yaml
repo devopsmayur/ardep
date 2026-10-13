@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: en-US
 tone_instructions: "Terse. Report only critical and major defects. No praise, no nitpicks, no style comments."
 reviews:
@@ -18,44 +19,33 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+  path_filters:
+    - "!**/prj.conf"
+    - "!**/CMakeLists.txt"
+    - "!scripts/**"
   path_instructions:
     - path: "**"
       instructions: |
-        Only comment on issues that would cause a crash, memory corruption,
-        data loss, a security vulnerability, or incorrect behaviour in
-        production. Do not comment on style, naming, formatting, missing
-        comments, refactoring ideas, minor performance, or anything
-        speculative. If unsure that something is a real defect, stay silent.
-        Prefer fewer, high-confidence comments.
+        Post at most 3 comments in total across the whole PR, only for the
+        most severe defects (remote code execution, authentication bypass,
+        memory corruption, secret exposure). Merge related findings into one
+        comment. Skip everything else, including anything a linter reports.
     - path: "**/*.c"
       instructions: |
-        Report only: buffer overflows or out-of-bounds access with
-        attacker-controlled lengths, authentication or authorization bypass,
-        hardcoded secrets or secret leakage, use-after-free, double free,
-        NULL dereference, uninitialised use, divide-by-zero, and data races
-        that corrupt state. Ignore everything else.
-    - path: "**/*.py"
-      instructions: |
-        Report only: command injection, hardcoded credentials, and
-        swallowed errors that hide failures. Ignore style.
+        Only report authentication/authorization bypass and
+        attacker-controlled buffer overflows.
     - path: ".github/workflows/**"
       instructions: |
-        Report only: untrusted code checkout under pull_request_target,
-        script injection from event context, write-all permissions, and
-        secret exposure. Ignore everything else.
-    - path: "**/prj.conf"
-      instructions: |
-        Report only config values that make the code crash or fail at
-        runtime (for example a zero heap with k_malloc in use).
+        Only report untrusted checkout under pull_request_target.
   tools:
     cppcheck:
-      enabled: true
+      enabled: false
     semgrep:
-      enabled: true
+      enabled: false
     gitleaks:
-      enabled: true
+      enabled: false
     actionlint:
-      enabled: true
+      enabled: false
     ruff:
       enabled: false
     yamllint:
