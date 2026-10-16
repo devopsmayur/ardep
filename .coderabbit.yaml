@@ -1,52 +1,122 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-language: en-US
-tone_instructions: "Terse. Report only critical and major defects. No praise, no nitpicks, no style comments."
+language: "en-US"
+early_access: false
+enable_free_tier: true
+
+# Assertive, nitpicky reviewer
+tone_instructions: "Be strict and exacting. Flag every issue, including style, naming, typos, comments, and formatting nits. Be direct, concise, and specific."
+
 reviews:
-  profile: chill
-  request_changes_workflow: false
-  high_level_summary: false
+  profile: "assertive"            # most feedback, including nitpicks
+  request_changes_workflow: true  # block merge until comments are resolved
+  high_level_summary: true
+  high_level_summary_in_walkthrough: false
+  review_status: true
+  collapse_walkthrough: false
   poem: false
-  review_status: false
-  collapse_walkthrough: true
-  changed_files_summary: false
-  sequence_diagrams: false
-  estimated_code_review_effort: false
-  related_issues: false
-  related_prs: false
-  suggested_labels: false
-  suggested_reviewers: false
+  sequence_diagrams: true
+  estimate_code_review_effort: true
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: true
+  suggested_reviewers: true
   in_progress_fortune: false
+
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true
+    base_branches:
+      - ".*"
+
   path_filters:
-    - "!**/prj.conf"
-    - "!**/CMakeLists.txt"
-    - "!scripts/**"
+    - "!**/build/**"
+    - "!**/*.lock"
+
   path_instructions:
-    - path: "**"
+    - path: "**/*.{c,h,cpp,hpp}"
       instructions: |
-        Post at most 3 comments in total across the whole PR, only for the
-        most severe defects (remote code execution, authentication bypass,
-        memory corruption, secret exposure). Merge related findings into one
-        comment. Skip everything else, including anything a linter reports.
-    - path: "**/*.c"
+        Review as strict Zephyr/embedded C. Flag: unchecked return values, missing NULL/bounds checks,
+        magic numbers, missing const/static, unused variables/includes, integer overflow/signedness issues,
+        non-Zephyr-style naming, missing LOG_* usage or wrong log level, blocking calls in ISR context,
+        missing error handling/cleanup paths, inconsistent formatting (Zephyr coding style, tabs),
+        typos in comments, and TODO/FIXME without an issue reference.
+    - path: "**/*.{dts,dtsi,overlay}"
       instructions: |
-        Only report authentication/authorization bypass and
-        attacker-controlled buffer overflows.
-    - path: ".github/workflows/**"
+        Check devicetree style: node/label naming, property ordering, missing status, unit-address
+        mismatches, hardcoded values that should be macros, and missing comments for non-obvious settings.
+    - path: "**/Kconfig*"
       instructions: |
-        Only report untrusted checkout under pull_request_target.
+        Flag missing help text, missing dependencies/defaults, unclear prompts, wrong option naming,
+        and inconsistent indentation.
+    - path: "**/{CMakeLists.txt,*.cmake}"
+      instructions: |
+        Flag deprecated CMake usage, missing target_* scoping, hardcoded paths, and unsorted source lists.
+    - path: "**/*.{conf,yml,yaml,json}"
+      instructions: |
+        Flag duplicate keys, unused or redundant settings, inconsistent formatting, and unexplained values.
+    - path: "**/*.py"
+      instructions: |
+        Flag missing type hints, bare except, unused imports, mutable default args, missing docstrings,
+        PEP 8 violations, and unclear naming.
+    - path: "**/*.{md,rst}"
+      instructions: |
+        Flag typos, grammar errors, broken links, inconsistent heading style, outdated instructions,
+        and missing code fence languages.
+    - path: ".github/**"
+      instructions: |
+        Flag unpinned actions, overly broad permissions, missing timeouts, and secrets exposure risks.
+
+  finishing_touches:
+    docstrings:
+      enabled: true
+    unit_tests:
+      enabled: true
+
+  pre_merge_checks:
+    docstrings:
+      mode: "warning"
+      threshold: 80
+    title:
+      mode: "warning"
+    description:
+      mode: "warning"
+
   tools:
-    cppcheck:
-      enabled: false
-    semgrep:
-      enabled: false
-    gitleaks:
-      enabled: false
-    actionlint:
-      enabled: false
-    ruff:
-      enabled: false
+    markdownlint:
+      enabled: true
     yamllint:
-      enabled: false
+      enabled: true
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    flake8:
+      enabled: true
+    pylint:
+      enabled: true
+    cppcheck:
+      enabled: true
+    clang:
+      enabled: true
+    languagetool:
+      enabled: true
+      level: "picky"
+    checkov:
+      enabled: true
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  learnings:
+    scope: "auto"
+  pull_requests:
+    scope: "auto"
