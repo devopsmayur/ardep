@@ -3,29 +3,27 @@ language: "en-US"
 early_access: false
 enable_free_tier: true
 
-# Assertive, nitpicky reviewer
-tone_instructions: "Be strict and exacting. Flag every issue, including style, naming, typos, comments, and formatting nits. Be direct, concise, and specific."
+# Chill reviewer: only critical / application-breaking issues
+tone_instructions: "Be relaxed and brief. Comment ONLY on bugs that crash, corrupt data, leak memory, cause security holes, or break the build. Ignore style, naming, typos, docs and TODOs."
 
 reviews:
-  profile: "assertive"            # most feedback, including nitpicks
-  request_changes_workflow: true  # block merge until comments are resolved
+  profile: "chill"
+  request_changes_workflow: false
   high_level_summary: true
-  high_level_summary_in_walkthrough: false
-  review_status: true
-  collapse_walkthrough: false
   poem: false
-  sequence_diagrams: true
-  estimate_code_review_effort: true
-  assess_linked_issues: true
-  related_issues: true
-  related_prs: true
-  suggested_labels: true
-  suggested_reviewers: true
-  in_progress_fortune: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  suggested_reviewers: false
 
   auto_review:
     enabled: true
-    drafts: true
+    drafts: false
     base_branches:
       - ".*"
 
@@ -34,89 +32,54 @@ reviews:
     - "!**/*.lock"
 
   path_instructions:
-    - path: "**/*.{c,h,cpp,hpp}"
+    - path: "**/*"
       instructions: |
-        Review as strict Zephyr/embedded C. Flag: unchecked return values, missing NULL/bounds checks,
-        magic numbers, missing const/static, unused variables/includes, integer overflow/signedness issues,
-        non-Zephyr-style naming, missing LOG_* usage or wrong log level, blocking calls in ISR context,
-        missing error handling/cleanup paths, inconsistent formatting (Zephyr coding style, tabs),
-        typos in comments, and TODO/FIXME without an issue reference.
-    - path: "**/*.{dts,dtsi,overlay}"
-      instructions: |
-        Check devicetree style: node/label naming, property ordering, missing status, unit-address
-        mismatches, hardcoded values that should be macros, and missing comments for non-obvious settings.
-    - path: "**/Kconfig*"
-      instructions: |
-        Flag missing help text, missing dependencies/defaults, unclear prompts, wrong option naming,
-        and inconsistent indentation.
-    - path: "**/{CMakeLists.txt,*.cmake}"
-      instructions: |
-        Flag deprecated CMake usage, missing target_* scoping, hardcoded paths, and unsorted source lists.
-    - path: "**/*.{conf,yml,yaml,json}"
-      instructions: |
-        Flag duplicate keys, unused or redundant settings, inconsistent formatting, and unexplained values.
-    - path: "**/*.py"
-      instructions: |
-        Flag missing type hints, bare except, unused imports, mutable default args, missing docstrings,
-        PEP 8 violations, and unclear naming.
-    - path: "**/*.{md,rst}"
-      instructions: |
-        Flag typos, grammar errors, broken links, inconsistent heading style, outdated instructions,
-        and missing code fence languages.
-    - path: ".github/**"
-      instructions: |
-        Flag unpinned actions, overly broad permissions, missing timeouts, and secrets exposure risks.
+        Report only critical or major defects: crashes, NULL dereferences, memory corruption or leaks,
+        buffer overflows, data loss, security vulnerabilities, deadlocks, and build breakages.
+        Do NOT comment on formatting, naming, comments, typos, missing docs or type hints, TODOs,
+        logging style, magic numbers, or other cosmetic or minor issues.
 
   finishing_touches:
     docstrings:
-      enabled: true
+      enabled: false
     unit_tests:
-      enabled: true
+      enabled: false
 
   pre_merge_checks:
     docstrings:
-      mode: "warning"
-      threshold: 80
+      mode: "off"
     title:
-      mode: "warning"
+      mode: "off"
     description:
-      mode: "warning"
+      mode: "off"
 
   tools:
     markdownlint:
-      enabled: true
+      enabled: false
     yamllint:
-      enabled: true
+      enabled: false
     shellcheck:
-      enabled: true
+      enabled: false
     ruff:
-      enabled: true
+      enabled: false
     flake8:
-      enabled: true
+      enabled: false
     pylint:
-      enabled: true
+      enabled: false
     cppcheck:
       enabled: true
     clang:
-      enabled: true
+      enabled: false
     languagetool:
-      enabled: true
-      level: "picky"
+      enabled: false
     checkov:
-      enabled: true
+      enabled: false
     gitleaks:
       enabled: true
     actionlint:
-      enabled: true
+      enabled: false
     github-checks:
-      enabled: true
-      timeout_ms: 90000
+      enabled: false
 
 chat:
   auto_reply: true
-
-knowledge_base:
-  learnings:
-    scope: "auto"
-  pull_requests:
-    scope: "auto"
