@@ -1,0 +1,7 @@
+config DEMO_FEATURE
+	bool "enable demo"
+	default y
+
+config demo_timeout
+  int "timeout"
+  default 5000
