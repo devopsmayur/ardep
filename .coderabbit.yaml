@@ -79,8 +79,33 @@ reviews:
       threshold: 80
     title:
       mode: "warning"
+      requirements: "Start with an imperative verb, keep under 72 characters, and include the requirement or ticket ID (e.g. [REQ-123])."
     description:
       mode: "warning"
+    issue_assessment:
+      mode: "warning"
+    custom_checks:
+      - name: "Safety Requirement Traceability"
+        mode: "error"
+        instructions: "Pass/fail: Every PR that changes C/C++ source, devicetree, or Kconfig must reference at least one requirement or ticket ID (e.g. REQ-123, JIRA-456) in the PR description, and state the safety integrity level (QM, ASIL-A/B/C/D) of the touched components. Fail if either is missing. Docs-only and CI-only changes are exempt."
+      - name: "No Dynamic Memory or Unsafe Constructs"
+        mode: "error"
+        instructions: "Pass/fail: Newly added or changed C/C++ code must not use malloc/calloc/realloc/free, recursion, goto, unbounded string functions (strcpy, strcat, sprintf, gets), or variable-length arrays. Zephyr k_malloc counts as dynamic memory. Fail and list each violation with file and line. Exempt test code and files under tests/ or scripts/."
+      - name: "Return Values and Error Handling"
+        mode: "warning"
+        instructions: "Pass/fail: In new or changed C code, every call that can fail (allocation, driver, CAN/LIN/Ethernet, flash, ADC, kernel APIs) must have its return value checked and handled. Fail if a failure is silently ignored or the error path does not release resources."
+      - name: "No Secrets or Hardcoded Credentials"
+        mode: "error"
+        instructions: "Pass/fail: The diff must not add hardcoded keys, passwords, tokens, certificates, or private keys, and must not embed fixed cryptographic seeds or default diagnostic (UDS) security-access keys. Fail on any such value. Placeholders referencing a secure key store are acceptable."
+      - name: "Cybersecurity Impact Statement"
+        mode: "warning"
+        instructions: "Pass/fail: If the PR changes network, bootloader/OTA update, diagnostics (UDS/DoIP), authentication, or crypto code, the PR description must include a short cybersecurity impact statement (threat considered and mitigation) in line with UNECE R155/R156 and ISO/SAE 21434 practice. Fail if missing. Not applicable otherwise."
+      - name: "Timing and Interrupt Safety"
+        mode: "warning"
+        instructions: "Pass/fail: Code that runs in ISR context or in time-critical tasks must not call blocking APIs (k_msleep, k_sleep, mutex or semaphore waits with K_FOREVER, printk/printf, file or network I/O). Fail and cite each blocking call. Flag any new busy-wait loops without a timeout."
+      - name: "Safety-Critical Change Needs Tests"
+        mode: "warning"
+        instructions: "Pass/fail: A PR that changes application logic under app/, drivers/, or boards/ must add or update a corresponding test (unit, ztest, or hardware-in-the-loop script) or explain in the PR description why no test is possible. Fail if neither is present."
 
   tools:
     markdownlint:
